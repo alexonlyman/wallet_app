@@ -1,0 +1,5 @@
+databaseChangeLog:
+  - include:
+      file: migration/V1__creating_default_tables.sql
+  - include:
+      file: migration/V2__add_testing_user.sql
