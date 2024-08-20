@@ -1,8 +1,9 @@
 package alex_pr.wallet_app.repository;
 
-import alex_pr.wallet_app.entity.UserEntity;
 import alex_pr.wallet_app.entity.WalletEntity;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 
 import java.util.Optional;
 /**
@@ -11,5 +12,6 @@ import java.util.Optional;
  */
 public interface WalletRepository extends JpaRepository<WalletEntity, Integer> {
 
-    Optional<WalletEntity> findById(Integer id);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<WalletEntity> findWalletEntityById(Integer id);
 }

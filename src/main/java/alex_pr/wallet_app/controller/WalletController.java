@@ -1,6 +1,5 @@
 package alex_pr.wallet_app.controller;
-import alex_pr.wallet_app.exception.NegativeBalanceException;
-import alex_pr.wallet_app.exception.WalletNotFoundException;
+import alex_pr.wallet_app.entity.WalletEntity;
 import alex_pr.wallet_app.service.WalletService;
 import io.github.bucket4j.Bucket;
 import lombok.RequiredArgsConstructor;
@@ -29,12 +28,12 @@ public class WalletController {
      *         or BAD_REQUEST (400) if an error occurs.
      */
     @PostMapping
-    public ResponseEntity<?> createWallet() {
+    public ResponseEntity<WalletEntity> createWallet() {
         if (bucket.tryConsume(1)) {
             try {
                 return ResponseEntity.status(HttpStatus.CREATED).body(walletService.createWallet());
             } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+                throw new RuntimeException("Не удалось создать кошелек", e);
             }
         } else {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
@@ -51,17 +50,16 @@ public class WalletController {
      */
 
     @PostMapping("/deposit/{wallet_id}")
-    public ResponseEntity<?> deposit(@PathVariable Integer wallet_id,@RequestParam Integer amount) {
+    public ResponseEntity<Integer> deposit(@PathVariable Integer wallet_id,@RequestParam Integer amount) {
         if (bucket.tryConsume(1)) {
             try {
-                return ResponseEntity.status(HttpStatus.ACCEPTED).body(walletService.deposit(wallet_id, amount));
-            } catch (WalletNotFoundException e) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("кошелек не найден");
+                walletService.deposit(wallet_id, amount);
+               return ResponseEntity.status(HttpStatus.ACCEPTED).build();
             } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+                throw new RuntimeException("Не удалось пополнить кошелек", e);
             }
         } else {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+          return  ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
         }
     }
 
@@ -77,17 +75,13 @@ public class WalletController {
      */
 
     @PostMapping("/withdraw/{wallet_id}")
-    public ResponseEntity<?> withdraw(@PathVariable Integer wallet_id, @RequestParam Integer amount) {
+    public ResponseEntity<Integer> withdraw(@PathVariable Integer wallet_id, @RequestParam Integer amount) {
         if (bucket.tryConsume(1)) {
             try {
-                Integer newBalance = walletService.withdraw(wallet_id, amount);
-                return ResponseEntity.status(HttpStatus.ACCEPTED).body(newBalance);
-            } catch (NegativeBalanceException e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("баланс отрицателен");
-            } catch (WalletNotFoundException e) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+                walletService.withdraw(wallet_id, amount);
+                return ResponseEntity.status(HttpStatus.ACCEPTED).build();
             } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                throw new RuntimeException("Не удалось снять средства с кошелька", e);
             }
         } else {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
@@ -102,12 +96,12 @@ public class WalletController {
      *         or BAD_REQUEST (400) if an error occurs.
      */
     @GetMapping("{wallet_id}")
-    public ResponseEntity<?> getBalance(@PathVariable Integer wallet_id) {
+    public ResponseEntity<Integer> getBalance(@PathVariable Integer wallet_id) {
         if (bucket.tryConsume(1)) {
             try {
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body(walletService.balance(wallet_id));
             } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+                throw new RuntimeException("Не удалось получить баланс кошелька", e);
             }
         } else {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();

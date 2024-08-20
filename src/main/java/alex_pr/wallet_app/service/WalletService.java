@@ -12,21 +12,19 @@ public interface WalletService {
      *
      * @param id the ID of the wallet
      * @param amount the amount to deposit
-     * @return the new balance of the wallet
      * @throws WalletNotFoundException if the wallet with the specified ID is not found
      */
-    Integer deposit(Integer id,Integer amount) throws WalletNotFoundException;
+    void deposit(Integer id,Integer amount) throws WalletNotFoundException;
 
     /**
      * Withdraws a specified amount from the wallet.
      *
      * @param id the ID of the wallet
      * @param amount the amount to withdraw
-     * @return the new balance of the wallet
      * @throws NegativeBalanceException if the withdrawal would result in a negative balance
      * @throws WalletNotFoundException if the wallet with the specified ID is not found
      */
-    Integer withdraw(Integer id,Integer amount) throws NegativeBalanceException, WalletNotFoundException;
+    void withdraw(Integer id,Integer amount) throws NegativeBalanceException, WalletNotFoundException;
 
     /**
      * Creates a new wallet associated with the current user.
